@@ -302,7 +302,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         synchronized (this) {
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
                 RotateAnimation animation = null;
+                //values[0] = x axis, values[1] = y axis, not sure why 4 and -4 values are used
                 if (event.values[0] < 4 && event.values[0] > -4) {
+                    //oreintation condition is for not triggering the animation even when device is in same position
                     if (event.values[1] > 0 && orientation != ExifInterface.ORIENTATION_ROTATE_90) {
                         // UP
                         orientation = ExifInterface.ORIENTATION_ROTATE_90;
@@ -349,12 +351,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (Math.abs(degrees - toDegrees) > 180) {
             compensation = 360;
         }
+        // When the device is being held on the left side (default position for
+        // a camera) we need to add, not subtract from the toDegrees.
         if (toDegrees == 0) {
             compensation = -compensation;
         }
+        // Creating the animation and the RELATIVE_TO_SELF means that the image
+        // will rotate on its center instead of a corner. (0-(-360)) for portrait
         RotateAnimation animation = new RotateAnimation(degrees, toDegrees - compensation,
                 Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        // Adding the time needed to rotate the image
         animation.setDuration(250);
+        // Set the animation to stop after reaching the desired position. With
+        // out this it would return to the original state.
         animation.setFillAfter(true);
         return animation;
     }
